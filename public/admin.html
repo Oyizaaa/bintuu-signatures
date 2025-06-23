@@ -8,81 +8,75 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f8f8f8;
-      padding: 20px;
+      background-color: #f9f9f9;
+      padding: 30px;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 30px;
+      font-weight: 600;
+      margin-bottom: 40px;
     }
 
     .dashboard {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 30px;
+      justify-content: center;
     }
 
-    .card-section {
+    .card-panel {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      padding: 25px;
       flex: 1;
-      min-width: 350px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      padding: 20px;
-      max-height: 80vh;
-      overflow-y: auto;
+      min-width: 400px;
+      max-width: 600px;
+      height: auto;
     }
 
-    .card-section h4 {
+    .card-panel h4 {
       margin-bottom: 20px;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 2px solid #eee;
       padding-bottom: 10px;
+      font-weight: 600;
     }
 
-    .order-card, .product-card {
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
+    .item-card {
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
     }
 
-    .order-card:last-child,
-    .product-card:last-child {
-      border-bottom: none;
-    }
-
-    .status {
-      font-weight: bold;
-    }
-
-    .btn-small {
-      padding: 4px 12px;
-      font-size: 0.9rem;
+    .item-card:last-child {
+      border: none;
     }
 
     .badge {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       margin-left: 6px;
     }
 
     .date {
       font-size: 0.85rem;
-      color: gray;
+      color: #777;
     }
   </style>
 </head>
 <body>
+
   <h2>Admin Dashboard</h2>
 
   <div class="dashboard">
     <!-- Orders Section -->
-    <div class="card-section">
-      <h4>🛒 Placed Orders</h4>
+    <div class="card-panel">
+      <h4>Orders</h4>
       <div id="ordersList">Loading orders...</div>
     </div>
 
     <!-- Inventory Section -->
-    <div class="card-section">
-      <h4>📦 Product Inventory</h4>
+    <div class="card-panel">
+      <h4>Product Inventory</h4>
       <div id="productList">Loading products...</div>
     </div>
   </div>
@@ -103,19 +97,18 @@
         }
 
         ordersList.innerHTML = orders.map(order => `
-          <div class="order-card">
-            <p><strong>${order.name}</strong> ordered <strong>${order.product}</strong> ×${order.quantity}</p>
-            <p>Phone: ${order.phone} | Email: ${order.email}</p>
-            <p>Address: ${order.address}</p>
-            <p>Payment: ${order.payment} | Size: ${order.size || 'N/A'}</p>
-            <p class="date">Date: ${new Date(order.date).toLocaleString()}</p>
-            <p id="status-${order.id}" class="status text-${order.status === 'confirmed' ? 'success' : 'warning'}">
+          <div class="item-card">
+            <p><strong>${order.name}</strong> ordered <strong>${order.product}</strong> × ${order.quantity}</p>
+            <p>Email: ${order.email} | Phone: ${order.phone}</p>
+            <p>Delivery: ${order.address}</p>
+            <p>Size: ${order.size || 'N/A'} | Payment: ${order.payment}</p>
+            <p class="date">Placed on: ${new Date(order.date).toLocaleString()}</p>
+            <p id="status-${order.id}" class="fw-semibold">
               ${order.status === 'confirmed' ? '✅ Payment Confirmed' : '⏳ Waiting for Payment'}
             </p>
             ${order.status !== 'confirmed' ? `
-              <button class="btn btn-success btn-small" onclick="confirmPayment(${order.id})">
-                Confirm Payment
-              </button>` : ''}
+              <button class="btn btn-sm btn-success" onclick="confirmPayment(${order.id})">Confirm Payment</button>
+            ` : ''}
           </div>
         `).join('');
       } catch (err) {
@@ -123,7 +116,6 @@
       }
     }
 
-    // Confirm payment
     async function confirmPayment(id) {
       try {
         const res = await fetch(`https://bintuu-shop.onrender.com/orders/${id}/confirm`, {
@@ -131,18 +123,15 @@
         });
         if (res.ok) {
           document.getElementById(`status-${id}`).textContent = '✅ Payment Confirmed';
-          document.getElementById(`status-${id}`).classList.remove('text-warning');
-          document.getElementById(`status-${id}`).classList.add('text-success');
-          loadOrders(); // refresh UI
         } else {
-          alert('❌ Failed to confirm payment.');
+          alert('Failed to confirm payment.');
         }
       } catch (err) {
-        alert('❌ Error confirming payment.');
+        alert('Network error during payment confirmation.');
       }
     }
 
-    // Fetch and display products
+    // Load and manage products
     async function loadProducts() {
       try {
         const res = await fetch('https://bintuu-shop.onrender.com/products');
@@ -154,7 +143,7 @@
         }
 
         productList.innerHTML = products.map(p => `
-          <div class="product-card">
+          <div class="item-card">
             <p><strong>${p.name}</strong> - ₦${p.price.toLocaleString()}
               <span class="badge bg-${p.status === 'sold-out' ? 'danger' : 'success'}">${p.status}</span>
             </p>
@@ -165,11 +154,10 @@
           </div>
         `).join('');
       } catch (err) {
-        productList.innerHTML = '<p class="text-danger">Error loading inventory.</p>';
+        productList.innerHTML = '<p class="text-danger">Error loading products.</p>';
       }
     }
 
-    // Update product status
     async function toggleStatus(id, newStatus) {
       try {
         const res = await fetch(`https://bintuu-shop.onrender.com/products/${id}/status`, {
@@ -181,14 +169,13 @@
         if (res.ok) {
           loadProducts();
         } else {
-          alert('❌ Failed to update product status.');
+          alert('Failed to update status.');
         }
       } catch (err) {
-        alert('❌ Error updating product status.');
+        alert('Error updating product status.');
       }
     }
 
-    // Load on page ready
     loadOrders();
     loadProducts();
   </script>
