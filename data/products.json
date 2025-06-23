@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Floral Abaya",
+    "price": 15000,
+    "status": "in-stock"
+  },
+  {
+    "id": 2,
+    "name": "Plain Hijab",
+    "price": 3000,
+    "status": "in-stock"
+  },
+  {
+    "id": 3,
+    "name": "Black Jilbab",
+    "price": 20000,
+    "status": "in-stock"
+  },
+  {
+    "name": "red and grey hijab",
+    "price": 20000,
+    "status": "in-stock",
+    "id": 4
+  },
+  {
+    "name": "plain Hijab",
+    "price": 10000,
+    "status": "in-stock",
+    "id": 5
+  }
+]

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Place Order - Bintuu Signatures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f6f6f6;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+    }
+    .order-box {
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.08);
+    }
+    .order-box h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: bold;
+    }
+    .payment-info {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-left: 5px solid #0d6efd;
+      background-color: #f0f8ff;
+    }
+    .payment-info strong {
+      font-weight: 600;
+    }
+    .payment-info a {
+      color: #0d6efd;
+      text-decoration: none;
+    }
+    .payment-info a:hover {
+      text-decoration: underline;
+    }
+    #response {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="order-box">
+    <h1>Place Your Order</h1>
+    <form id="orderForm">
+      <div class="mb-3">
+        <label for="name" class="form-label">Full Name:</label>
+        <input type="text" id="name" name="name" required class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone Number:</label>
+        <input type="text" id="phone" name="phone" required class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" id="email" name="email" required class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label">Delivery Address:</label>
+        <textarea id="address" name="address" required class="form-control" rows="2"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="product" class="form-label">Product:</label>
+        <input type="text" id="product" name="product" required class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="quantity" class="form-label">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" required class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label for="size" class="form-label">Size (Abaya only):</label>
+        <select id="size" name="size" class="form-select">
+          <option value="">-- Select Size --</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="payment" class="form-label">Payment Method:</label>
+        <select id="payment" name="payment" required class="form-select">
+          <option value="">-- Select Payment Method --</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Card Payment">Card Payment</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="notes" class="form-label">Additional Notes:</label>
+        <textarea id="notes" name="notes" class="form-control" rows="2"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-dark w-100">Submit Order</button>
+    </form>
+
+    <div class="payment-info mt-4">
+      <strong>💳 Please make payment to:</strong><br />
+      Account Name: <strong>BINTUU SIGNATURES</strong><br />
+      Bank: <strong>GTBank</strong><br />
+      Account Number: <strong>0445729145</strong><br />
+      <br />
+      Send payment proof via WhatsApp:<br />
+      <a href="https://wa.me/2348146637635" target="_blank">📩 Chat on WhatsApp</a>
+    </div>
+
+    <div id="response"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('orderForm');
+    const responseText = document.getElementById('response');
+    let orderId = null;
+
+    // Autofill product from query string
+    const params = new URLSearchParams(window.location.search);
+    const productName = params.get('product');
+    if (productName) {
+      document.getElementById('product').value = productName;
+    }
+
+    // Submit form
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch('/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        orderId = result.order?.id;
+        responseText.innerHTML = '<strong style="color: orange;">🕒 Waiting for payment confirmation...</strong>';
+        checkOrderStatus(orderId);
+      } catch (err) {
+        responseText.innerHTML = '<span style="color:red;">❌ Failed to place order. Try again.</span>';
+      }
+    });
+
+    async function checkOrderStatus(id) {
+      const interval = setInterval(async () => {
+        const res = await fetch('/orders');
+        const orders = await res.json();
+        const order = orders.find(o => o.id === id);
+        if (order && order.status === 'confirmed') {
+          responseText.innerHTML = '<strong style="color: green;">✅ Thank you for shopping with us!</strong>';
+          clearInterval(interval);
+        }
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
