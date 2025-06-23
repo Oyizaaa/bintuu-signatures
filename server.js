@@ -1,30 +1,31 @@
 const express = require('express');
 const fs = require('fs');
-const path = require('path');
+const cors = require('cors');
 const app = express();
-
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors()); // ✅ Enable CORS
 app.use(express.json());
 app.use(express.static('public'));
 
-// GET /products - fetch all products
+// GET /products - List products
 app.get('/products', (req, res) => {
   fs.readFile('./data/products.json', 'utf8', (err, data) => {
     if (err) {
-      return res.status(500).json({ message: 'Error reading products file' });
+      return res.status(500).json({ message: 'Error reading product file' });
     }
+
     try {
       const products = JSON.parse(data);
       res.json(products);
-    } catch {
-      res.status(500).json({ message: 'Error parsing products data' });
+    } catch (parseError) {
+      res.status(500).json({ message: 'Error parsing product file' });
     }
   });
 });
 
-// POST /orders - Place new order
+// POST /orders - Place a new order
 app.post('/orders', (req, res) => {
   const newOrder = req.body;
 
@@ -32,26 +33,31 @@ app.post('/orders', (req, res) => {
     if (err) return res.status(500).json({ message: 'Error reading orders file' });
 
     let orders = [];
+
     try {
       orders = JSON.parse(data);
-    } catch {
-      return res.status(500).json({ message: 'Invalid orders file' });
+    } catch (parseErr) {
+      return res.status(500).json({ message: 'Error parsing orders file' });
     }
 
     newOrder.id = orders.length + 1;
-    newOrder.date = new Date().toLocaleString();
+    newOrder.date = new Date().toISOString();
     newOrder.status = 'pending';
 
     orders.push(newOrder);
 
-    fs.writeFile('./data/orders.json', JSON.stringify(orders, null, 2), err => {
+    fs.writeFile('./data/orders.json', JSON.stringify(orders, null, 2), (err) => {
       if (err) return res.status(500).json({ message: 'Error saving order' });
-      res.status(201).json({ message: 'Order placed successfully', order: newOrder });
+
+      res.status(201).json({
+        message: 'Order placed successfully',
+        order: newOrder
+      });
     });
   });
 });
 
-// GET /orders - Get all orders
+// GET /orders - View all orders
 app.get('/orders', (req, res) => {
   fs.readFile('./data/orders.json', 'utf8', (err, data) => {
     if (err) return res.status(500).json({ message: 'Error reading orders file' });
@@ -59,7 +65,7 @@ app.get('/orders', (req, res) => {
     try {
       const orders = JSON.parse(data);
       res.json(orders);
-    } catch {
+    } catch (parseErr) {
       res.status(500).json({ message: 'Error parsing orders file' });
     }
   });
@@ -67,87 +73,64 @@ app.get('/orders', (req, res) => {
 
 // PUT /orders/:id/confirm - Confirm payment
 app.put('/orders/:id/confirm', (req, res) => {
+  const orderId = parseInt(req.params.id);
+
   fs.readFile('./data/orders.json', 'utf8', (err, data) => {
     if (err) return res.status(500).json({ message: 'Error reading orders file' });
 
-    let orders = [];
+    let orders;
     try {
       orders = JSON.parse(data);
-    } catch {
-      return res.status(500).json({ message: 'Invalid JSON format' });
+    } catch (parseErr) {
+      return res.status(500).json({ message: 'Error parsing orders file' });
     }
 
-    const orderId = parseInt(req.params.id);
-    const index = orders.findIndex(o => o.id === orderId);
-    if (index === -1) return res.status(404).json({ message: 'Order not found' });
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
 
-    orders[index].status = 'confirmed';
+    orders[orderIndex].status = 'confirmed';
 
-    fs.writeFile('./data/orders.json', JSON.stringify(orders, null, 2), err => {
-      if (err) return res.status(500).json({ message: 'Error saving update' });
-      res.json({ message: '✅ Payment confirmed successfully!' });
+    fs.writeFile('./data/orders.json', JSON.stringify(orders, null, 2), (err) => {
+      if (err) return res.status(500).json({ message: 'Error updating order' });
+
+      res.json({ message: 'Payment confirmed' });
     });
   });
 });
 
-// PUT /products/:id/status - Change product stock status
+// PUT /products/:id/status - Toggle product stock status
 app.put('/products/:id/status', (req, res) => {
+  const productId = parseInt(req.params.id);
   const { status } = req.body;
 
   fs.readFile('./data/products.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Error reading products file' });
+    if (err) return res.status(500).json({ message: 'Error reading product file' });
 
-    let products = [];
+    let products;
     try {
       products = JSON.parse(data);
-    } catch {
-      return res.status(500).json({ message: 'Invalid JSON format' });
+    } catch (parseErr) {
+      return res.status(500).json({ message: 'Error parsing product file' });
     }
 
-    const productId = parseInt(req.params.id);
-    const index = products.findIndex(p => p.id === productId);
-    if (index === -1) return res.status(404).json({ message: 'Product not found' });
-
-    products[index].status = status;
-
-    fs.writeFile('./data/products.json', JSON.stringify(products, null, 2), err => {
-      if (err) return res.status(500).json({ message: 'Error saving product update' });
-      res.json({ message: `Product marked as ${status}` });
-    });
-  });
-});
-
-// POST /products - Add new product
-app.post('/products', (req, res) => {
-  const { name, price, status } = req.body;
-
-  fs.readFile('./data/products.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Error reading products file' });
-
-    let products = [];
-    try {
-      products = JSON.parse(data);
-    } catch {
-      return res.status(500).json({ message: 'Error parsing products file' });
+    const productIndex = products.findIndex(p => p.id === productId);
+    if (productIndex === -1) {
+      return res.status(404).json({ message: 'Product not found' });
     }
 
-    const newProduct = {
-      id: products.length + 1,
-      name,
-      price,
-      status
-    };
+    products[productIndex].status = status;
 
-    products.push(newProduct);
+    fs.writeFile('./data/products.json', JSON.stringify(products, null, 2), (err) => {
+      if (err) return res.status(500).json({ message: 'Error updating product status' });
 
-    fs.writeFile('./data/products.json', JSON.stringify(products, null, 2), err => {
-      if (err) return res.status(500).json({ message: 'Error writing new product' });
-      res.json({ message: 'Product added successfully', product: newProduct });
+      res.json({ message: 'Product status updated successfully' });
     });
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server is running at http://localhost:${PORT}`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
