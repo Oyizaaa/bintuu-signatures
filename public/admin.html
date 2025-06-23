@@ -17,20 +17,36 @@
       margin-bottom: 30px;
     }
 
-    .section {
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .card-section {
+      flex: 1;
+      min-width: 350px;
       background: #fff;
-      padding: 25px;
       border-radius: 10px;
-      margin-bottom: 40px;
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .card-section h4 {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
     }
 
     .order-card, .product-card {
       border-bottom: 1px solid #ddd;
-      padding: 15px 0;
+      padding: 10px 0;
     }
 
-    .order-card:last-child, .product-card:last-child {
+    .order-card:last-child,
+    .product-card:last-child {
       border-bottom: none;
     }
 
@@ -38,39 +54,35 @@
       font-weight: bold;
     }
 
-    button {
-      margin-top: 5px;
-    }
-
-    .date {
-      font-size: 0.9rem;
-      color: gray;
-    }
-
     .btn-small {
-      padding: 2px 8px;
+      padding: 4px 12px;
       font-size: 0.9rem;
     }
 
     .badge {
       font-size: 0.8rem;
-      margin-left: 5px;
+      margin-left: 6px;
+    }
+
+    .date {
+      font-size: 0.85rem;
+      color: gray;
     }
   </style>
 </head>
 <body>
   <h2>Admin Dashboard</h2>
 
-  <div class="container">
+  <div class="dashboard">
     <!-- Orders Section -->
-    <div class="section">
-      <h4>Orders</h4>
+    <div class="card-section">
+      <h4>🛒 Placed Orders</h4>
       <div id="ordersList">Loading orders...</div>
     </div>
 
-    <!-- Product Inventory Section -->
-    <div class="section">
-      <h4>Inventory</h4>
+    <!-- Inventory Section -->
+    <div class="card-section">
+      <h4>📦 Product Inventory</h4>
       <div id="productList">Loading products...</div>
     </div>
   </div>
@@ -92,17 +104,22 @@
 
         ordersList.innerHTML = orders.map(order => `
           <div class="order-card">
-            <p><strong>${order.name}</strong> ordered <strong>${order.product}</strong> x${order.quantity}</p>
+            <p><strong>${order.name}</strong> ordered <strong>${order.product}</strong> ×${order.quantity}</p>
             <p>Phone: ${order.phone} | Email: ${order.email}</p>
             <p>Address: ${order.address}</p>
             <p>Payment: ${order.payment} | Size: ${order.size || 'N/A'}</p>
             <p class="date">Date: ${new Date(order.date).toLocaleString()}</p>
-            <p id="status-${order.id}" class="status">${order.status === 'confirmed' ? '✅ Payment Confirmed' : '⏳ Waiting for Payment'}</p>
-            ${order.status !== 'confirmed' ? `<button class="btn btn-success btn-sm" onclick="confirmPayment(${order.id})">Confirm Payment</button>` : ''}
+            <p id="status-${order.id}" class="status text-${order.status === 'confirmed' ? 'success' : 'warning'}">
+              ${order.status === 'confirmed' ? '✅ Payment Confirmed' : '⏳ Waiting for Payment'}
+            </p>
+            ${order.status !== 'confirmed' ? `
+              <button class="btn btn-success btn-small" onclick="confirmPayment(${order.id})">
+                Confirm Payment
+              </button>` : ''}
           </div>
         `).join('');
       } catch (err) {
-        ordersList.innerHTML = '<p>Error loading orders.</p>';
+        ordersList.innerHTML = '<p class="text-danger">Error loading orders.</p>';
       }
     }
 
@@ -114,20 +131,25 @@
         });
         if (res.ok) {
           document.getElementById(`status-${id}`).textContent = '✅ Payment Confirmed';
+          document.getElementById(`status-${id}`).classList.remove('text-warning');
+          document.getElementById(`status-${id}`).classList.add('text-success');
+          loadOrders(); // refresh UI
+        } else {
+          alert('❌ Failed to confirm payment.');
         }
       } catch (err) {
-        alert('Error confirming payment.');
+        alert('❌ Error confirming payment.');
       }
     }
 
-    // Load and manage products
+    // Fetch and display products
     async function loadProducts() {
       try {
         const res = await fetch('https://bintuu-shop.onrender.com/products');
         const products = await res.json();
 
         if (products.length === 0) {
-          productList.innerHTML = '<p>No products found.</p>';
+          productList.innerHTML = '<p>No products available.</p>';
           return;
         }
 
@@ -143,11 +165,11 @@
           </div>
         `).join('');
       } catch (err) {
-        productList.innerHTML = '<p>Error loading products.</p>';
+        productList.innerHTML = '<p class="text-danger">Error loading inventory.</p>';
       }
     }
 
-    // Toggle product status
+    // Update product status
     async function toggleStatus(id, newStatus) {
       try {
         const res = await fetch(`https://bintuu-shop.onrender.com/products/${id}/status`, {
@@ -156,13 +178,17 @@
           body: JSON.stringify({ status: newStatus })
         });
 
-        if (res.ok) loadProducts();
+        if (res.ok) {
+          loadProducts();
+        } else {
+          alert('❌ Failed to update product status.');
+        }
       } catch (err) {
-        alert('Error updating product status.');
+        alert('❌ Error updating product status.');
       }
     }
 
-    // Load everything on page load
+    // Load on page ready
     loadOrders();
     loadProducts();
   </script>
