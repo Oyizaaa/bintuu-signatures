@@ -159,38 +159,46 @@
       }
     }
 
-    function validateEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+   function validateEmail(email) {
+  // Trim email before validating
+  const trimmedEmail = email.trim();
+  console.log('Validating email:', trimmedEmail);
+
+  // Simple email regex, accept typical valid emails
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(trimmedEmail);
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  let valid = true;
+
+  ['name', 'phone', 'email', 'address', 'product', 'quantity', 'payment'].forEach(id => {
+    const input = document.getElementById(id);
+    if(!input.value.trim()) {
+      setError(input, 'This field is required.');
+      valid = false;
+    } else {
+      setError(input, '');
     }
+  });
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  const emailInput = document.getElementById('email');
+  const emailValue = emailInput.value.trim();  // trim before validating
+  if(emailValue && !validateEmail(emailValue)) {
+    setError(emailInput, 'Please enter a valid email address.');
+    valid = false;
+  }
 
-      let valid = true;
+  const qtyInput = document.getElementById('quantity');
+  if(qtyInput.value && Number(qtyInput.value) < 1) {
+    setError(qtyInput, 'Quantity must be at least 1.');
+    valid = false;
+  }
 
-      ['name', 'phone', 'email', 'address', 'product', 'quantity', 'payment'].forEach(id => {
-        const input = document.getElementById(id);
-        if(!input.value.trim()) {
-          setError(input, 'This field is required.');
-          valid = false;
-        } else {
-          setError(input, '');
-        }
-      });
+  if(!valid) return;
 
-      const emailInput = document.getElementById('email');
-      if(emailInput.value && !validateEmail(emailInput.value)) {
-        setError(emailInput, 'Please enter a valid email address.');
-        valid = false;
-      }
-
-      const qtyInput = document.getElementById('quantity');
-      if(qtyInput.value && Number(qtyInput.value) < 1) {
-        setError(qtyInput, 'Quantity must be at least 1.');
-        valid = false;
-      }
-
-      if(!valid) return;
 
       const orderData = {
         name: form.name.value.trim(),
