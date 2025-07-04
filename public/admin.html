@@ -1,183 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard - Bintuu Signatures</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Admin Dashboard - Bintuu Signatures</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f9f9f9;
-      padding: 30px;
+      font-family: 'Playfair Display', serif;
+      background-color: #fdfaf7;
+      color: #1f2937;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
     }
-
-    h2 {
-      text-align: center;
-      font-weight: 600;
-      margin-bottom: 40px;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-
-    .dashboard {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      justify-content: center;
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
     }
-
-    .card-panel {
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.08);
-      padding: 25px;
-      flex: 1;
-      min-width: 400px;
-      max-width: 600px;
-      height: auto;
-    }
-
-    .card-panel h4 {
-      margin-bottom: 20px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
+    th {
+      background-color: #f3f4f6;
       font-weight: 600;
     }
-
-    .item-card {
-      border-bottom: 1px solid #eee;
-      padding: 15px 0;
-    }
-
-    .item-card:last-child {
+    button.confirm-btn {
+      background-color: #059669; /* green-600 */
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
       border: none;
+      transition: background-color 0.3s ease;
     }
-
-    .badge {
-      font-size: 0.75rem;
-      margin-left: 6px;
+    button.confirm-btn:hover {
+      background-color: #047857; /* green-700 */
     }
-
-    .date {
-      font-size: 0.85rem;
-      color: #777;
+    button.confirm-btn:disabled {
+      background-color: #9ca3af; /* gray-400 */
+      cursor: not-allowed;
+    }
+    .search-input {
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 0.375rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .pagination {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .pagination button {
+      background-color: #e5e7eb;
+      border-radius: 0.375rem;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    .pagination button:hover {
+      background-color: #d1d5db;
+    }
+    .pagination button.active {
+      background-color: #059669;
+      color: white;
+      cursor: default;
+    }
+    header.flex {
+      margin-bottom: 1.5rem;
+      align-items: center;
+      justify-content: space-between;
     }
   </style>
 </head>
 <body>
 
-  <h2>Admin Dashboard</h2>
+  <header class="flex">
+    <h1 class="text-3xl font-bold">Bintuu Signatures - Admin Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Logout</button>
+  </header>
 
-  <div class="dashboard">
-    <!-- Orders Section -->
-    <div class="card-panel">
-      <h4>Orders</h4>
-      <div id="ordersList">Loading orders...</div>
-    </div>
+  <input type="text" id="searchInput" class="search-input" placeholder="Search orders by name or product..." aria-label="Search orders" />
 
-    <!-- Inventory Section -->
-    <div class="card-panel">
-      <h4>Product Inventory</h4>
-      <div id="productList">Loading products...</div>
-    </div>
-  </div>
+  <table id="ordersTable" aria-label="Orders Table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Name</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Size</th>
+        <th>Address</th>
+        <th>Payment Method</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="10" class="text-center p-6">Loading orders...</td></tr>
+    </tbody>
+  </table>
+
+  <div class="pagination" id="pagination"></div>
 
   <script>
-    const ordersList = document.getElementById('ordersList');
-    const productList = document.getElementById('productList');
+    // Redirect to login if not authenticated
+    if (localStorage.getItem('isAdmin') !== 'true') {
+      window.location.href = 'login.html';
+    }
 
-    // Fetch and display orders
-    async function loadOrders() {
+    const ordersTableBody = document.querySelector('#ordersTable tbody');
+    const searchInput = document.getElementById('searchInput');
+    const paginationDiv = document.getElementById('pagination');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    let allOrders = [];
+    let filteredOrders = [];
+    const pageSize = 10;
+    let currentPage = 1;
+
+    async function fetchOrders() {
       try {
-        const res = await fetch('https://bintuu-shop.onrender.com/orders');
-        const orders = await res.json();
-
-        if (orders.length === 0) {
-          ordersList.innerHTML = '<p>No orders yet.</p>';
-          return;
-        }
-
-        ordersList.innerHTML = orders.map(order => `
-          <div class="item-card">
-            <p><strong>${order.name}</strong> ordered <strong>${order.product}</strong> × ${order.quantity}</p>
-            <p>Email: ${order.email} | Phone: ${order.phone}</p>
-            <p>Delivery: ${order.address}</p>
-            <p>Size: ${order.size || 'N/A'} | Payment: ${order.payment}</p>
-            <p class="date">Placed on: ${new Date(order.date).toLocaleString()}</p>
-            <p id="status-${order.id}" class="fw-semibold">
-              ${order.status === 'confirmed' ? '✅ Payment Confirmed' : '⏳ Waiting for Payment'}
-            </p>
-            ${order.status !== 'confirmed' ? `
-              <button class="btn btn-sm btn-success" onclick="confirmPayment(${order.id})">Confirm Payment</button>
-            ` : ''}
-          </div>
-        `).join('');
-      } catch (err) {
-        ordersList.innerHTML = '<p class="text-danger">Error loading orders.</p>';
+        const res = await fetch('/orders');
+        allOrders = await res.json();
+        filteredOrders = allOrders;
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+      } catch (error) {
+        ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-red-600 p-6">Failed to load orders.</td></tr>';
       }
     }
 
+    function renderTable() {
+      if (filteredOrders.length === 0) {
+        ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-6">No orders found.</td></tr>';
+        return;
+      }
+
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageOrders = filteredOrders.slice(start, end);
+
+      ordersTableBody.innerHTML = pageOrders.map(order => {
+        const statusLabel = order.status === 'confirmed' 
+          ? '<span class="text-green-600 font-semibold">Payment Confirmed</span>' 
+          : '<span class="text-yellow-600 font-semibold">Pending Payment</span>';
+
+        const confirmBtn = order.status === 'confirmed' 
+          ? `<button class="confirm-btn" disabled>Confirmed</button>` 
+          : `<button class="confirm-btn" onclick="confirmPayment(${order.id})">Confirm Payment</button>`;
+
+        const dateStr = new Date(order.date).toLocaleString();
+
+        return `
+          <tr>
+            <td>${order.id}</td>
+            <td>${order.name}</td>
+            <td>${order.product}</td>
+            <td>${order.quantity}</td>
+            <td>${order.size || '-'}</td>
+            <td>${order.address}</td>
+            <td>${order.payment || '-'}</td>
+            <td>${statusLabel}</td>
+            <td>${dateStr}</td>
+            <td>${confirmBtn}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredOrders.length / pageSize);
+      if (totalPages <= 1) {
+        paginationDiv.innerHTML = '';
+        return;
+      }
+
+      let buttons = '';
+      for(let i = 1; i <= totalPages; i++) {
+        buttons += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+      paginationDiv.innerHTML = buttons;
+    }
+
+    window.goToPage = function(page) {
+      if(page === currentPage) return;
+      currentPage = page;
+      renderTable();
+      renderPagination();
+    };
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      filteredOrders = allOrders.filter(order => 
+        order.name.toLowerCase().includes(query) || order.product.toLowerCase().includes(query)
+      );
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+    });
+
     async function confirmPayment(id) {
+      if(!confirm('Confirm payment for this order?')) return;
+
       try {
-        const res = await fetch(`https://bintuu-shop.onrender.com/orders/${id}/confirm`, {
-          method: 'PATCH'
-        });
-        if (res.ok) {
-          document.getElementById(`status-${id}`).textContent = '✅ Payment Confirmed';
+        const res = await fetch(`/orders/${id}/confirm`, { method: 'PATCH' });
+        if(res.ok) {
+          alert('Payment confirmed!');
+          await fetchOrders(); // Refresh the table
         } else {
           alert('Failed to confirm payment.');
         }
-      } catch (err) {
-        alert('Network error during payment confirmation.');
+      } catch (error) {
+        alert('Network error.');
       }
     }
 
-    // Load and manage products
-    async function loadProducts() {
-      try {
-        const res = await fetch('https://bintuu-shop.onrender.com/products');
-        const products = await res.json();
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('isAdmin');
+      window.location.href = 'login.html';
+    });
 
-        if (products.length === 0) {
-          productList.innerHTML = '<p>No products available.</p>';
-          return;
-        }
-
-        productList.innerHTML = products.map(p => `
-          <div class="item-card">
-            <p><strong>${p.name}</strong> - ₦${p.price.toLocaleString()}
-              <span class="badge bg-${p.status === 'sold-out' ? 'danger' : 'success'}">${p.status}</span>
-            </p>
-            <button class="btn btn-outline-${p.status === 'sold-out' ? 'success' : 'danger'} btn-sm"
-              onclick="toggleStatus(${p.id}, '${p.status === 'sold-out' ? 'in-stock' : 'sold-out'}')">
-              Mark as ${p.status === 'sold-out' ? 'In Stock' : 'Sold Out'}
-            </button>
-          </div>
-        `).join('');
-      } catch (err) {
-        productList.innerHTML = '<p class="text-danger">Error loading products.</p>';
-      }
-    }
-
-    async function toggleStatus(id, newStatus) {
-      try {
-        const res = await fetch(`https://bintuu-shop.onrender.com/products/${id}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus })
-        });
-
-        if (res.ok) {
-          loadProducts();
-        } else {
-          alert('Failed to update status.');
-        }
-      } catch (err) {
-        alert('Error updating product status.');
-      }
-    }
-
-    loadOrders();
-    loadProducts();
+    fetchOrders();
   </script>
+
 </body>
 </html>
