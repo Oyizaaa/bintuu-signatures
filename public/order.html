@@ -37,16 +37,86 @@
 
       <!-- Order Form -->
       <form id="orderForm" class="flex-1 bg-white rounded-xl shadow-lg p-8 space-y-6" novalidate>
-        <!-- Your input fields here, same as before -->
-        <!-- ... (no changes in inputs) -->
+        <!-- Full Name -->
         <div>
           <label for="name" class="block text-sm font-semibold mb-2">Full Name <span class="text-red-600">*</span></label>
           <input type="text" id="name" name="name" required
             class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Your full name" />
           <p class="error-message hidden" id="nameError">Please enter your full name.</p>
         </div>
-        <!-- other fields ... -->
 
+        <!-- Phone -->
+        <div>
+          <label for="phone" class="block text-sm font-semibold mb-2">Phone Number <span class="text-red-600">*</span></label>
+          <input type="tel" id="phone" name="phone" required
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="+234 901 234 5678" />
+          <p class="error-message hidden" id="phoneError">Please enter your phone number.</p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold mb-2">Email <span class="text-red-600">*</span></label>
+          <input type="email" id="email" name="email" required
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="example@email.com" />
+          <p class="error-message hidden" id="emailError">Please enter a valid email address.</p>
+        </div>
+
+        <!-- Delivery Address -->
+        <div>
+          <label for="address" class="block text-sm font-semibold mb-2">Delivery Address <span class="text-red-600">*</span></label>
+          <textarea id="address" name="address" required rows="3"
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Street, City, State"></textarea>
+          <p class="error-message hidden" id="addressError">Please enter your delivery address.</p>
+        </div>
+
+        <!-- Product -->
+        <div>
+          <label for="product" class="block text-sm font-semibold mb-2">Product <span class="text-red-600">*</span></label>
+          <input type="text" id="product" name="product" readonly
+            class="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-100 cursor-not-allowed" />
+          <p class="error-message hidden" id="productError">Product info missing.</p>
+        </div>
+
+        <!-- Quantity -->
+        <div>
+          <label for="quantity" class="block text-sm font-semibold mb-2">Quantity <span class="text-red-600">*</span></label>
+          <input type="number" id="quantity" name="quantity" min="1" value="1" required
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" />
+          <p class="error-message hidden" id="quantityError">Please enter a quantity (minimum 1).</p>
+        </div>
+
+        <!-- Size -->
+        <div>
+          <label for="size" class="block text-sm font-semibold mb-2">Size (Abayas only)</label>
+          <select id="size" name="size" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0">
+            <option value="">-- Select Size --</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+        </div>
+
+        <!-- Payment -->
+        <div>
+          <label for="payment" class="block text-sm font-semibold mb-2">Payment Method <span class="text-red-600">*</span></label>
+          <select id="payment" name="payment" required
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0">
+            <option value="">-- Select Payment Method --</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Card Payment">Card Payment</option>
+          </select>
+          <p class="error-message hidden" id="paymentError">Please select a payment method.</p>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="notes" class="block text-sm font-semibold mb-2">Additional Notes</label>
+          <textarea id="notes" name="notes" rows="3"
+            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Anything else we should know?"></textarea>
+        </div>
+
+        <!-- Submit Button -->
         <button type="submit" class="w-full bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-800 transition">
           Place Order
         </button>
@@ -80,7 +150,7 @@
   </div>
 
   <script>
-    const BACKEND_URL = 'https://your-backend-url.onrender.com'; // Replace this with your actual backend URL
+    const BACKEND_URL = 'https://bintuu-shop.onrender.com'; // Replace with your backend URL
 
     const form = document.getElementById('orderForm');
     const successMsg = document.getElementById('successMessage');
