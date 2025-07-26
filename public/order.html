@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,7 +17,7 @@
       outline-offset: 2px;
     }
     .error-message {
-      color: #dc2626; /* Tailwind red-600 */
+      color: #dc2626;
       font-size: 0.875rem;
       margin-top: 0.25rem;
     }
@@ -37,46 +37,39 @@
 
       <!-- Order Form -->
       <form id="orderForm" class="flex-1 bg-white rounded-xl shadow-lg p-8 space-y-6" novalidate>
-        <!-- All your inputs here -->
         <div>
           <label for="name" class="block text-sm font-semibold mb-2">Full Name <span class="text-red-600">*</span></label>
-          <input type="text" id="name" name="name" required
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Your full name" />
+          <input type="text" id="name" name="name" required class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Your full name" />
           <p class="error-message hidden" id="nameError">Please enter your full name.</p>
         </div>
 
         <div>
           <label for="phone" class="block text-sm font-semibold mb-2">Phone Number <span class="text-red-600">*</span></label>
-          <input type="tel" id="phone" name="phone" required
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="+234 901 234 5678" />
+          <input type="tel" id="phone" name="phone" required class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="+234 901 234 5678" />
           <p class="error-message hidden" id="phoneError">Please enter your phone number.</p>
         </div>
 
         <div>
           <label for="email" class="block text-sm font-semibold mb-2">Email <span class="text-red-600">*</span></label>
-          <input type="email" id="email" name="email" required
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="example@email.com" />
+          <input type="email" id="email" name="email" required class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="example@email.com" />
           <p class="error-message hidden" id="emailError">Please enter a valid email address.</p>
         </div>
 
         <div>
           <label for="address" class="block text-sm font-semibold mb-2">Delivery Address <span class="text-red-600">*</span></label>
-          <textarea id="address" name="address" required rows="3"
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Street, City, State"></textarea>
+          <textarea id="address" name="address" required rows="3" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Street, City, State"></textarea>
           <p class="error-message hidden" id="addressError">Please enter your delivery address.</p>
         </div>
 
         <div>
           <label for="product" class="block text-sm font-semibold mb-2">Product <span class="text-red-600">*</span></label>
-          <input type="text" id="product" name="product" readonly
-            class="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-100 cursor-not-allowed" />
+          <input type="text" id="product" name="product" readonly class="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-100 cursor-not-allowed" />
           <p class="error-message hidden" id="productError">Product info missing.</p>
         </div>
 
         <div>
           <label for="quantity" class="block text-sm font-semibold mb-2">Quantity <span class="text-red-600">*</span></label>
-          <input type="number" id="quantity" name="quantity" min="1" value="1" required
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" />
+          <input type="number" id="quantity" name="quantity" min="1" value="1" required class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" />
           <p class="error-message hidden" id="quantityError">Please enter a quantity (minimum 1).</p>
         </div>
 
@@ -93,8 +86,7 @@
 
         <div>
           <label for="payment" class="block text-sm font-semibold mb-2">Payment Method <span class="text-red-600">*</span></label>
-          <select id="payment" name="payment" required
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0">
+          <select id="payment" name="payment" required class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0">
             <option value="">-- Select Payment Method --</option>
             <option value="Bank Transfer">Bank Transfer</option>
             <option value="Card Payment">Card Payment</option>
@@ -104,8 +96,7 @@
 
         <div>
           <label for="notes" class="block text-sm font-semibold mb-2">Additional Notes</label>
-          <textarea id="notes" name="notes" rows="3"
-            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Anything else we should know?"></textarea>
+          <textarea id="notes" name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-0" placeholder="Anything else we should know?"></textarea>
         </div>
 
         <button type="submit" class="w-full bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-800 transition">
@@ -113,35 +104,33 @@
         </button>
       </form>
 
-      <!-- Order Summary / Instructions -->
+      <!-- Order Summary -->
       <aside class="block w-full md:w-80 bg-white rounded-xl shadow-lg p-8 text-gray-700 flex-shrink-0 mb-6 md:mb-0">
         <h2 class="text-2xl font-semibold mb-4">Order Summary</h2>
         <p class="mb-4 text-gray-600">Review your order details carefully. Once you place your order, please make payment to:</p>
         <ul class="mb-4 list-disc list-inside">
-          <li><strong>Account Name:</strong> Siyaka Fatimah Bintu </li>
+          <li><strong>Account Name:</strong> Siyaka Fatimah Bintu</li>
           <li><strong>Account Number:</strong> 0445729145</li>
           <li><strong>Bank:</strong> GtBank</li>
         </ul>
-        <p class="mb-6">After payment, kindly send your proof of payment via
-          <a href="https://wa.me/2348146637635" target="_blank" class="text-black font-semibold underline">WhatsApp</a>.
-        </p>
+        <p class="mb-6">After payment, kindly send your proof via <a href="https://wa.me/2348146637635" target="_blank" class="text-black font-semibold underline">WhatsApp</a>.</p>
         <p class="text-sm text-gray-500 italic">We will confirm your payment and update your order status promptly.</p>
       </aside>
 
     </div>
   </main>
 
-  <!-- Success Message Modal -->
+  <!-- Success Modal -->
   <div id="successMessage" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-xl p-8 max-w-md text-center shadow-xl">
       <h3 class="text-2xl font-semibold mb-4">Thank you for your order!</h3>
-      <p class="mb-6">Your order has been received. Please complete your payment and send the proof via WhatsApp. We will confirm your payment shortly.</p>
+      <p class="mb-6">Please complete your payment and send proof via WhatsApp. We’ll confirm your order shortly.</p>
       <button id="closeSuccess" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 transition">Close</button>
     </div>
   </div>
 
   <script>
-    const BACKEND_URL = 'https://bintuu-shop.onrender.com'; // Replace with your backend URL
+    const BACKEND_URL = 'https://bintuu-shop.onrender.com';
 
     const form = document.getElementById('orderForm');
     const successMsg = document.getElementById('successMessage');
@@ -149,7 +138,7 @@
 
     function setError(input, message) {
       const errorEl = document.getElementById(input.id + 'Error');
-      if(message) {
+      if (message) {
         input.classList.add('border-red-600');
         errorEl.textContent = message;
         errorEl.classList.remove('hidden');
@@ -159,46 +148,38 @@
       }
     }
 
-   function validateEmail(email) {
-  // Trim email before validating
-  const trimmedEmail = email.trim();
-  console.log('Validating email:', trimmedEmail);
-
-  // Simple email regex, accept typical valid emails
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(trimmedEmail);
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  let valid = true;
-
-  ['name', 'phone', 'email', 'address', 'product', 'quantity', 'payment'].forEach(id => {
-    const input = document.getElementById(id);
-    if(!input.value.trim()) {
-      setError(input, 'This field is required.');
-      valid = false;
-    } else {
-      setError(input, '');
+    function validateEmail(email) {
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email.trim());
     }
-  });
 
-  const emailInput = document.getElementById('email');
-  const emailValue = emailInput.value.trim();  // trim before validating
-  if(emailValue && !validateEmail(emailValue)) {
-    setError(emailInput, 'Please enter a valid email address.');
-    valid = false;
-  }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let valid = true;
 
-  const qtyInput = document.getElementById('quantity');
-  if(qtyInput.value && Number(qtyInput.value) < 1) {
-    setError(qtyInput, 'Quantity must be at least 1.');
-    valid = false;
-  }
+      ['name', 'phone', 'email', 'address', 'product', 'quantity', 'payment'].forEach(id => {
+        const input = document.getElementById(id);
+        if (!input.value.trim()) {
+          setError(input, 'This field is required.');
+          valid = false;
+        } else {
+          setError(input, '');
+        }
+      });
 
-  if(!valid) return;
+      const emailInput = document.getElementById('email');
+      if (emailInput.value.trim() && !validateEmail(emailInput.value)) {
+        setError(emailInput, 'Please enter a valid email address.');
+        valid = false;
+      }
 
+      const qty = Number(document.getElementById('quantity').value);
+      if (qty < 1) {
+        setError(document.getElementById('quantity'), 'Quantity must be at least 1.');
+        valid = false;
+      }
+
+      if (!valid) return;
 
       const orderData = {
         name: form.name.value.trim(),
@@ -206,7 +187,7 @@ form.addEventListener('submit', async (e) => {
         email: form.email.value.trim(),
         address: form.address.value.trim(),
         product: form.product.value.trim(),
-        quantity: Number(form.quantity.value),
+        quantity: qty,
         size: form.size.value,
         payment: form.payment.value,
         notes: form.notes.value.trim(),
@@ -219,20 +200,22 @@ form.addEventListener('submit', async (e) => {
           body: JSON.stringify(orderData)
         });
 
-        if(response.ok){
+        if (response.ok) {
           successMsg.classList.remove('hidden');
           form.reset();
+
           const urlParams = new URLSearchParams(window.location.search);
           const productInput = document.getElementById('product');
-          if(productInput && urlParams.has('product')) {
+          if (productInput && urlParams.has('product')) {
             productInput.value = urlParams.get('product');
           }
+
         } else {
-          const error = await response.json();
-          alert('Order failed: ' + (error.message || 'Unknown error'));
+          const err = await response.json();
+          alert('Order failed: ' + (err.message || 'Server error.'));
         }
-      } catch(err) {
-        alert('Network error. Please try again later.');
+      } catch (error) {
+        alert('Network error. Please try again.');
       }
     });
 
@@ -243,7 +226,7 @@ form.addEventListener('submit', async (e) => {
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const productInput = document.getElementById('product');
-      if(productInput && urlParams.has('product')) {
+      if (productInput && urlParams.has('product')) {
         productInput.value = urlParams.get('product');
       }
     });
