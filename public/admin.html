@@ -1,122 +1,247 @@
-<script>
-  const BACKEND_URL = 'https://bintuu-shop.onrender.com';
-
-  if (localStorage.getItem('isAdmin') !== 'true') {
-    window.location.href = 'login.html';
-  }
-
-  const ordersTableBody = document.querySelector('#ordersTable tbody');
-  const searchInput = document.getElementById('searchInput');
-  const paginationDiv = document.getElementById('pagination');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  let allOrders = [];
-  let filteredOrders = [];
-  const pageSize = 10;
-  let currentPage = 1;
-
-  async function fetchOrders() {
-    try {
-      const res = await fetch(`${BACKEND_URL}/orders`);
-      allOrders = await res.json();
-      filteredOrders = allOrders;
-      currentPage = 1;
-      renderTable();
-      renderPagination();
-    } catch (error) {
-      ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-red-600 p-6">Failed to load orders.</td></tr>';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard - Bintuu Signatures</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Playfair Display', serif;
+      background-color: #fdfaf7;
+      color: #1f2937;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
     }
-  }
-
-  function renderTable() {
-    if (filteredOrders.length === 0) {
-      ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-6">No orders found.</td></tr>';
-      return;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-
-    const start = (currentPage - 1) * pageSize;
-    const end = start + pageSize;
-    const pageOrders = filteredOrders.slice(start, end);
-
-    ordersTableBody.innerHTML = pageOrders.map(order => {
-      const statusLabel = order.status === 'confirmed' 
-        ? '<span class="text-green-600 font-semibold">Payment Confirmed</span>' 
-        : '<span class="text-yellow-600 font-semibold">Pending Payment</span>';
-
-      const confirmBtn = order.status === 'confirmed' 
-        ? `<button class="confirm-btn" disabled>Confirmed</button>` 
-        : `<button class="confirm-btn" onclick="confirmPayment(${order.id})">Confirm Payment</button>`;
-
-      const dateStr = new Date(order.date).toLocaleString();
-
-      return `
-        <tr>
-          <td>${order.id}</td>
-          <td>${order.name}</td>
-          <td>${order.product}</td>
-          <td>${order.quantity}</td>
-          <td>${order.size || '-'}</td>
-          <td>${order.address}</td>
-          <td>${order.payment || '-'}</td>
-          <td>${statusLabel}</td>
-          <td>${dateStr}</td>
-          <td>${confirmBtn}</td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  function renderPagination() {
-    const totalPages = Math.ceil(filteredOrders.length / pageSize);
-    if (totalPages <= 1) {
-      paginationDiv.innerHTML = '';
-      return;
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
     }
-
-    let buttons = '';
-    for(let i = 1; i <= totalPages; i++) {
-      buttons += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    th {
+      background-color: #f3f4f6;
+      font-weight: 600;
     }
-    paginationDiv.innerHTML = buttons;
-  }
+    button.confirm-btn {
+      background-color: #059669;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    button.confirm-btn:hover {
+      background-color: #047857;
+    }
+    button.confirm-btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .search-input {
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 0.375rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .pagination {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .pagination button {
+      background-color: #e5e7eb;
+      border-radius: 0.375rem;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    .pagination button:hover {
+      background-color: #d1d5db;
+    }
+    .pagination button.active {
+      background-color: #059669;
+      color: white;
+      cursor: default;
+    }
+    header.flex {
+      margin-bottom: 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
 
-  window.goToPage = function(page) {
-    if(page === currentPage) return;
-    currentPage = page;
-    renderTable();
-    renderPagination();
-  };
+  <header class="flex">
+    <h1 class="text-3xl font-bold">Bintuu Signatures - Admin Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">Logout</button>
+  </header>
 
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim().toLowerCase();
-    filteredOrders = allOrders.filter(order => 
-      order.name.toLowerCase().includes(query) || order.product.toLowerCase().includes(query)
-    );
-    currentPage = 1;
-    renderTable();
-    renderPagination();
-  });
+  <input type="text" id="searchInput" class="search-input" placeholder="Search orders by name or product..." aria-label="Search orders" />
 
-  async function confirmPayment(id) {
-    if(!confirm('Confirm payment for this order?')) return;
+  <table id="ordersTable" aria-label="Orders Table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Name</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Size</th>
+        <th>Address</th>
+        <th>Payment Method</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="10" class="text-center p-6">Loading orders...</td></tr>
+    </tbody>
+  </table>
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/orders/${id}/confirm`, { method: 'PATCH' });
-      if(res.ok) {
-        alert('Payment confirmed!');
-        await fetchOrders();
-      } else {
-        alert('Failed to confirm payment.');
+  <div class="pagination" id="pagination"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const BACKEND_URL = 'https://bintuu-shop.onrender.com';
+      const ordersTableBody = document.querySelector('#ordersTable tbody');
+      const searchInput = document.getElementById('searchInput');
+      const paginationDiv = document.getElementById('pagination');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (localStorage.getItem('isAdmin') !== 'true') {
+        window.location.href = 'login.html';
+        return;
       }
-    } catch (error) {
-      alert('Network error.');
-    }
-  }
 
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('isAdmin');
-    window.location.href = 'login.html';
-  });
+      let allOrders = [];
+      let filteredOrders = [];
+      const pageSize = 10;
+      let currentPage = 1;
 
-  fetchOrders();
-</script>
+      async function fetchOrders() {
+        try {
+          const res = await fetch(`${BACKEND_URL}/orders`);
+          allOrders = await res.json();
+          filteredOrders = allOrders;
+          currentPage = 1;
+          renderTable();
+          renderPagination();
+        } catch (error) {
+          ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-red-600 p-6">Failed to load orders.</td></tr>';
+        }
+      }
+
+      function renderTable() {
+        if (filteredOrders.length === 0) {
+          ordersTableBody.innerHTML = '<tr><td colspan="10" class="text-center p-6">No orders found.</td></tr>';
+          return;
+        }
+
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const pageOrders = filteredOrders.slice(start, end);
+
+        ordersTableBody.innerHTML = pageOrders.map(order => {
+          const statusLabel = order.status === 'confirmed' 
+            ? '<span class="text-green-600 font-semibold">Payment Confirmed</span>' 
+            : '<span class="text-yellow-600 font-semibold">Pending Payment</span>';
+
+          const confirmBtn = order.status === 'confirmed' 
+            ? `<button class="confirm-btn" disabled>Confirmed</button>` 
+            : `<button class="confirm-btn" onclick="confirmPayment(${order.id})">Confirm Payment</button>`;
+
+          const dateStr = new Date(order.date).toLocaleString();
+
+          return `
+            <tr>
+              <td>${order.id}</td>
+              <td>${order.name}</td>
+              <td>${order.product}</td>
+              <td>${order.quantity}</td>
+              <td>${order.size || '-'}</td>
+              <td>${order.address}</td>
+              <td>${order.payment || '-'}</td>
+              <td>${statusLabel}</td>
+              <td>${dateStr}</td>
+              <td>${confirmBtn}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderPagination() {
+        const totalPages = Math.ceil(filteredOrders.length / pageSize);
+        if (totalPages <= 1) {
+          paginationDiv.innerHTML = '';
+          return;
+        }
+
+        let buttons = '';
+        for(let i = 1; i <= totalPages; i++) {
+          buttons += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        paginationDiv.innerHTML = buttons;
+      }
+
+      window.goToPage = function(page) {
+        if(page === currentPage) return;
+        currentPage = page;
+        renderTable();
+        renderPagination();
+      };
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim().toLowerCase();
+        filteredOrders = allOrders.filter(order => 
+          order.name.toLowerCase().includes(query) || order.product.toLowerCase().includes(query)
+        );
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+      });
+
+      window.confirmPayment = async function(id) {
+        if(!confirm('Confirm payment for this order?')) return;
+
+        try {
+          const res = await fetch(`${BACKEND_URL}/orders/${id}/confirm`, { method: 'PATCH' });
+          if(res.ok) {
+            alert('Payment confirmed!');
+            await fetchOrders();
+          } else {
+            alert('Failed to confirm payment.');
+          }
+        } catch (error) {
+          alert('Network error.');
+        }
+      };
+
+      logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('isAdmin');
+        window.location.href = 'login.html';
+      });
+
+      fetchOrders();
+    });
+  </script>
+
+</body>
+</html>
